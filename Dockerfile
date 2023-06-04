@@ -7,7 +7,7 @@ ENV fpm_conf /usr/local/etc/php-fpm.d/www.conf
 ENV php_vars /usr/local/etc/php/conf.d/docker-vars.ini
 
 ENV NGINX_VERSION 1.18.0
-ENV LUA_MODULE_VERSION 0.10.17
+ENV LUA_MODULE_VERSION 0.10.15rc1
 ENV DEVEL_KIT_MODULE_VERSION 0.3.1
 ENV GEOIP2_MODULE_VERSION 3.2
 ENV LUAJIT_LIB=/usr/lib
@@ -64,11 +64,11 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
     --with-file-aio \
     --with-http_v2_module \
     --add-module=/usr/src/ngx_devel_kit-$DEVEL_KIT_MODULE_VERSION \
-    --add-module=/usr/src/lua-nginx-module-$LUA_MODULE_VERSION \
+#    --add-module=/usr/src/lua-nginx-module-$LUA_MODULE_VERSION \
 #    --add-module=/usr/src/ngx_http_geoip2_module-$GEOIP2_MODULE_VERSION \
   " \
   && addgroup -S nginx \
-  && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \ 
+  && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
   && apk add --no-cache --virtual .build-deps \
     autoconf \
     gcc \
@@ -85,11 +85,11 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
  #   geoip-dev \
     libmaxminddb-dev \
     perl-dev \
-    luajit-dev \
+  #  luajit-dev \
   && curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
   && curl -fSL http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
   && curl -fSL https://github.com/simpl/ngx_devel_kit/archive/v$DEVEL_KIT_MODULE_VERSION.tar.gz -o ndk.tar.gz \
-  && curl -fSL https://github.com/openresty/lua-nginx-module/archive/v$LUA_MODULE_VERSION.tar.gz -o lua.tar.gz \
+  # && curl -fSL https://github.com/openresty/lua-nginx-module/archive/v$LUA_MODULE_VERSION.tar.gz -o lua.tar.gz \
 #  && curl -fSL https://github.com/leev/ngx_http_geoip2_module/archive/$GEOIP2_MODULE_VERSION.tar.gz -o ngx_http_geoip2_module.tar.gz \
   && export GNUPGHOME="$(mktemp -d)" \
   && found=''; \
@@ -108,9 +108,9 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
   && mkdir -p /usr/src \
   && tar -zxC /usr/src -f nginx.tar.gz \
   && tar -zxC /usr/src -f ndk.tar.gz \
-  && tar -zxC /usr/src -f lua.tar.gz \
+#  && tar -zxC /usr/src -f lua.tar.gz \
 #  && tar -zxC /usr/src -f ngx_http_geoip2_module.tar.gz \
-#  && rm nginx.tar.gz ndk.tar.gz lua.tar.gz ngx_http_geoip2_module.tar.gz \ 
+#  && rm nginx.tar.gz ndk.tar.gz lua.tar.gz ngx_http_geoip2_module.tar.gz \
   && cd /usr/src/nginx-$NGINX_VERSION \
   && ./configure $CONFIG --with-debug \
   && make -j$(getconf _NPROCESSORS_ONLN) \
@@ -217,8 +217,8 @@ RUN echo @testing http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repo
     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
     php composer-setup.php --quiet --install-dir=/usr/bin --filename=composer && \
     rm composer-setup.php && \
-    pip3 install -U pip && \
-    pip3 install -U certbot && \
+#    pip3 install -U pip && \
+#    pip3 install -U certbot && \
     mkdir -p /etc/letsencrypt/webrootauth && \
     apk del gcc musl-dev linux-headers libffi-dev augeas-dev python3-dev make autoconf
 #    apk del .sys-deps
@@ -276,9 +276,7 @@ RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
 COPY scripts/start.sh /start.sh
 COPY scripts/pull /usr/bin/pull
 COPY scripts/push /usr/bin/push
-COPY scripts/letsencrypt-setup /usr/bin/letsencrypt-setup
-COPY scripts/letsencrypt-renew /usr/bin/letsencrypt-renew
-RUN chmod 755 /usr/bin/pull && chmod 755 /usr/bin/push && chmod 755 /usr/bin/letsencrypt-setup && chmod 755 /usr/bin/letsencrypt-renew && chmod 755 /start.sh
+RUN chmod 755 /usr/bin/pull && chmod 755 /usr/bin/push && chmod 755 /start.sh
 
 # copy in code
 COPY src/ /var/www/html/
