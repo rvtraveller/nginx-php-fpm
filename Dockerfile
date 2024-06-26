@@ -16,7 +16,7 @@ RUN apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/comm
 
 # INstall nginx + lua and devel kit
 RUN apk add --no-cache nginx \
-    nginx-mod-http-lua \
+    # nginx-mod-http-lua \
     nginx-mod-devel-kit
 
 RUN echo @testing https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
@@ -56,7 +56,7 @@ RUN apk add --no-cache --virtual .sys-deps \
     sqlite-dev \
     imap-dev \
     postgresql-dev \
-    lua-resty-core \
+    # lua-resty-core \
     libjpeg-turbo-dev \
     libwebp-dev \
     zlib-dev \
