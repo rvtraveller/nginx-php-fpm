@@ -1,4 +1,6 @@
-FROM php:8.2.7-fpm-alpine3.18
+ARG PHP_VERSION=8.4
+
+FROM php:${PHP_VERSION}-fpm-alpine
 
 LABEL maintainer="Ric Harvey <ric@squarecows.com>"
 
@@ -13,15 +15,13 @@ ENV LUAJIT_INC=/usr/include/luajit-2.1
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
 RUN apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community gnu-libiconv
 
-
-# INstall nginx + lua and devel kit
+# Install nginx + devel kit
 RUN apk add --no-cache nginx \
-    # nginx-mod-http-lua \
     nginx-mod-devel-kit
 
 RUN echo @testing https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
-    echo /etc/apk/respositories && \
-    apk update && apk upgrade &&\
+    echo /etc/apk/repositories && \
+    apk update && apk upgrade && \
     apk add --no-cache \
     bash \
     openssh-client \
@@ -44,48 +44,47 @@ RUN echo @testing https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk
     libjpeg-turbo-dev \
     freetype-dev \
     libxslt-dev \
-    gcc 
+    gcc
 
 RUN apk add --no-cache --virtual .sys-deps \
     musl-dev \
     linux-headers \
     augeas-dev \
-    libmcrypt-dev \
     python3-dev \
     libffi-dev \
     sqlite-dev \
-    imap-dev \
     postgresql-dev \
-    # lua-resty-core \
     libjpeg-turbo-dev \
     libwebp-dev \
     zlib-dev \
     libxpm-dev \
     libpng \
     libpng-dev && \
-  # Install PHP modules
+  # Install PHP extensions
     docker-php-ext-configure gd \
       --enable-gd \
       --with-freetype \
       --with-jpeg && \
     docker-php-ext-install gd && \
-     pip install --upgrade pip && \
     docker-php-ext-install pdo_mysql mysqli pdo_sqlite pgsql pdo_pgsql exif intl xsl soap zip && \
     pecl install -o -f xdebug && \
-    pecl install -o -f redis && \ 
+    pecl install -o -f redis && \
     pecl install -o -f mongodb && \
+    pecl install -o -f opentelemetry && \
+    pecl install -o -f protobuf && \
     echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini && \
     echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini && \
     echo "zend_extension=xdebug" > /usr/local/etc/php/conf.d/xdebug.ini && \
+    echo "extension=opentelemetry.so" > /usr/local/etc/php/conf.d/opentelemetry.ini && \
+    echo "extension=protobuf.so" > /usr/local/etc/php/conf.d/protobuf.ini && \
     docker-php-source delete && \
     mkdir -p /var/www/app && \
   # Install composer and certbot
     mkdir -p /var/log/supervisor && \
     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
     php composer-setup.php --quiet --install-dir=/usr/bin --filename=composer && \
-    rm composer-setup.php &&\
-  #  pip3 install -U pip && \
-    pip3 install -U certbot && \
+    rm composer-setup.php && \
+    pip3 install --break-system-packages -U certbot && \
     mkdir -p /etc/letsencrypt/webrootauth && \
     apk del gcc musl-dev linux-headers libffi-dev augeas-dev python3-dev make autoconf && \
     apk del .sys-deps
@@ -127,7 +126,6 @@ RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
         -e "s/listen = 127.0.0.1:9000/listen = \/var\/run\/php-fpm.sock/g" \
         -e "s/^;clear_env = no$/clear_env = no/" \
         ${fpm_conf}
-#    ln -s /etc/php7/php.ini /etc/php7/conf.d/php.ini && \
 RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini && \
 	sed -i \
 	    -e "s/;opcache/opcache/g" \
