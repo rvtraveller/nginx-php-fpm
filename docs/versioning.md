@@ -17,6 +17,7 @@ The latest tag will always follow the main branch in git. the other versions wil
 
 | Docker Tag | PHP Version | Nginx Version | Alpine Version | Container Scripts | Notes |
 |-----|-------|-----|--------|--------|----------|
+| 4.0.1 | 8.4 | bundled with Alpine | 3.21 | 0.3.17 | fix PHP-FPM Unix socket path for PHP 8.4 |
 | 4.0.0 | 8.4 | bundled with Alpine | 3.21 | 0.3.17 | upgrade to PHP 8.4, add OpenTelemetry + protobuf extensions |
 
 #### PHP 8.2.x
