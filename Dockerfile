@@ -66,7 +66,7 @@ RUN apk add --no-cache --virtual .sys-deps \
       --with-freetype \
       --with-jpeg && \
     docker-php-ext-install gd && \
-    docker-php-ext-install pdo_mysql mysqli pdo_sqlite pgsql pdo_pgsql exif intl xsl soap zip && \
+    docker-php-ext-install bcmath pdo_mysql mysqli pdo_sqlite pgsql pdo_pgsql exif intl xsl soap zip && \
     pecl install -o -f xdebug && \
     pecl install -o -f redis && \
     pecl install -o -f mongodb && \
